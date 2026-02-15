@@ -20,7 +20,6 @@ export default async function ProductDetail({ params }: PageProps) {
     <main className="py-10">
       <div className="mx-auto max-w-4xl">
         <div className="grid gap-8 md:grid-cols-2">
-          {/* <div className="aspect-square rounded-2xl bg-gray-100" /> */}
 
           
           <div className="relative aspect-square overflow-hidden rounded-2xl bg-gray-100">

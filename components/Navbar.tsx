@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import Container from "./Container";
+import { useCart } from "@/store/cart";
 // later we'll connect to cart store
 // import { useCart } from "@/store/cart";
 
 export default function Navbar() {
   // const count = useCart((s) => s.items.reduce((a, i) => a + i.qty, 0));
-  const count = 0;
+  const count = useCart((s) => s.count());
 
   return (
     <header className="sticky top-0 z-50 border-b bg-white/80 backdrop-blur">

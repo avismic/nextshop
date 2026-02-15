@@ -1,0 +1,324 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import Container from "@/components/Container";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+import { useCart } from "@/store/cart";
+import { getPaymentProvider } from "@/lib/payments";
+import { addOrder } from "@/lib/orders/storage";
+import type { Order } from "@/lib/orders/types";
+
+function money(cents: number) {
+  return `₹ ${(cents / 100).toFixed(2)}`;
+}
+
+const CheckoutSchema = z.object({
+  name: z.string().min(2, "Name is required"),
+  email: z.string().email("Enter a valid email"),
+  line1: z.string().min(5, "Address is required"),
+  city: z.string().min(2, "City is required"),
+  state: z.string().min(2, "State is required"),
+  pincode: z.string().regex(/^\d{6}$/, "Pincode must be 6 digits"),
+});
+
+type CheckoutForm = z.infer<typeof CheckoutSchema>;
+
+export default function CheckoutPage() {
+  const router = useRouter();
+
+  // Avoid hydration mismatch / empty flash
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const items = useCart((s) => s.items);
+  const clearCart = useCart((s) => s.clear);
+
+  const subtotal = useMemo(
+    () => items.reduce((sum, i) => sum + i.price * i.qty, 0),
+    [items]
+  );
+
+  const shipping = items.length > 0 ? 199 : 0;
+  const total = subtotal + shipping;
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<CheckoutForm>({
+    resolver: zodResolver(CheckoutSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      line1: "",
+      city: "",
+      state: "",
+      pincode: "",
+    },
+  });
+
+  const placeOrder = async (data: CheckoutForm) => {
+    if (items.length === 0) return;
+
+    const orderId = `ord_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+    const provider = getPaymentProvider();
+    const payment = await provider.createPayment({
+      orderId,
+      total: { amount: total, currency: "INR" },
+      items: items.map((i) => ({
+        id: i.id,
+        name: i.name,
+        unitPrice: i.price,
+        qty: i.qty,
+      })),
+      customer: { name: data.name, email: data.email },
+    });
+
+    const order: Order = {
+      id: orderId,
+      createdAt: Date.now(),
+      customer: { name: data.name, email: data.email },
+      address: {
+        line1: data.line1,
+        city: data.city,
+        state: data.state,
+        pincode: data.pincode,
+      },
+      items: items.map((i) => ({
+        id: i.id,
+        name: i.name,
+        unitPrice: i.price,
+        qty: i.qty,
+      })),
+      pricing: {
+        subtotal,
+        shipping,
+        total,
+        currency: "INR",
+      },
+      payment: {
+        provider: payment.provider,
+        paymentId: payment.paymentId,
+        status: payment.status,
+      },
+    };
+
+    // Persist last order (demo)
+    addOrder(order);
+
+    // Clear cart (localStorage persist)
+    clearCart();
+
+    // Clear HttpOnly cookie snapshot (optional but clean)
+    try {
+      await fetch("/api/cart", { method: "DELETE" });
+    } catch {
+      // ignore for demo
+    }
+
+    router.push("/orders");
+  };
+
+  if (!mounted) {
+    return (
+      <main className="py-10">
+        <Container>
+          <h1 className="text-2xl font-semibold tracking-tight">Checkout</h1>
+          <p className="mt-2 text-sm text-gray-600">Loading…</p>
+        </Container>
+      </main>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <main className="py-10">
+        <Container>
+          <h1 className="text-2xl font-semibold tracking-tight">Checkout</h1>
+
+          <Card className="mt-6">
+            <CardContent className="p-6">
+              <p className="text-sm text-gray-600">Your cart is empty.</p>
+              <div className="mt-4">
+                <Link href="/products">
+                  <Button>Browse products</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </Container>
+      </main>
+    );
+  }
+
+  return (
+    <main className="py-10">
+      <Container>
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Checkout</h1>
+            <p className="mt-1 text-sm text-gray-600">
+              Mock checkout now — Stripe-ready later.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-3">
+          {/* Form */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <div className="text-base font-semibold">Shipping details</div>
+              </CardHeader>
+
+              <CardContent className="p-4">
+                <form className="space-y-4" onSubmit={handleSubmit(placeOrder)}>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="text-sm text-gray-700">Name</label>
+                      <Input {...register("name")} placeholder="Abhishek Anand" />
+                      {errors.name && (
+                        <p className="mt-1 text-xs text-rose-600">
+                          {errors.name.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="text-sm text-gray-700">Email</label>
+                      <Input {...register("email")} placeholder="abhishek@email.com" />
+                      {errors.email && (
+                        <p className="mt-1 text-xs text-rose-600">
+                          {errors.email.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-gray-700">Address</label>
+                    <Input {...register("line1")} placeholder="Flat, Street, Area" />
+                    {errors.line1 && (
+                      <p className="mt-1 text-xs text-rose-600">
+                        {errors.line1.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <div>
+                      <label className="text-sm text-gray-700">City</label>
+                      <Input {...register("city")} placeholder="Hyderabad" />
+                      {errors.city && (
+                        <p className="mt-1 text-xs text-rose-600">
+                          {errors.city.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="text-sm text-gray-700">State</label>
+                      <Input {...register("state")} placeholder="Telangana" />
+                      {errors.state && (
+                        <p className="mt-1 text-xs text-rose-600">
+                          {errors.state.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="text-sm text-gray-700">Pincode</label>
+                      <Input {...register("pincode")} placeholder="5000XX" />
+                      {errors.pincode && (
+                        <p className="mt-1 text-xs text-rose-600">
+                          {errors.pincode.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <Button className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? "Placing order…" : "Place Order (Mock Payment)"}
+                  </Button>
+
+                  <p className="text-xs text-gray-500">
+                    This is a demo checkout. Payment is simulated.
+                  </p>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Summary */}
+          <div>
+            <Card className="sticky top-24">
+              <CardHeader>
+                <div className="text-base font-semibold">Order summary</div>
+              </CardHeader>
+
+              <CardContent className="space-y-3 text-sm">
+                <div className="space-y-2">
+                  {items.map((i) => (
+                    <div key={i.id} className="flex justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="truncate font-medium text-gray-900">
+                          {i.name}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          {i.qty} × {money(i.price)}
+                        </div>
+                      </div>
+                      <div className="shrink-0 font-medium text-gray-900">
+                        {money(i.price * i.qty)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="h-px bg-gray-100" />
+
+                <div className="flex justify-between text-gray-700">
+                  <span>Subtotal</span>
+                  <span className="font-medium text-gray-900">{money(subtotal)}</span>
+                </div>
+
+                <div className="flex justify-between text-gray-700">
+                  <span>Shipping</span>
+                  <span className="font-medium text-gray-900">{money(shipping)}</span>
+                </div>
+
+                <div className="h-px bg-gray-100" />
+
+                <div className="flex justify-between">
+                  <span className="text-gray-700">Total</span>
+                  <span className="text-base font-semibold text-gray-900">
+                    {money(total)}
+                  </span>
+                </div>
+
+                <div className="pt-3">
+                  <Link href="/cart" className="block">
+                    <Button variant="secondary" className="w-full">
+                      Back to cart
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </Container>
+    </main>
+  );
+}

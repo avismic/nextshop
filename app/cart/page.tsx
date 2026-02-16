@@ -101,10 +101,10 @@ export default function CartPage() {
                         <div className="mt-4 flex flex-wrap items-center gap-3">
                           <span className="text-sm text-gray-600">Qty</span>
 
-                          <div className="flex items-center overflow-hidden rounded-lg border border-gray-200 bg-white">
+                          <div className="flex items-center overflow-hidden rounded-lg border border-black bg-white">
                             <button
                               type="button"
-                              className="h-9 w-9 hover:bg-gray-50 disabled:opacity-50"
+                              className="h-9 w-9 hover:bg-gray-300 text-black"
                               onClick={() => setQty(item.id, item.qty - 1)}
                               disabled={item.qty <= 1}
                               aria-label="Decrease quantity"
@@ -112,13 +112,13 @@ export default function CartPage() {
                               –
                             </button>
 
-                            <div className="grid h-9 w-12 place-items-center text-sm font-medium">
+                            <div className="grid h-9 w-12 place-items-center text-sm text-black font-medium">
                               {item.qty}
                             </div>
 
                             <button
                               type="button"
-                              className="h-9 w-9 hover:bg-gray-50"
+                              className="h-9 w-9 hover:bg-gray-300 text-black"
                               onClick={() => setQty(item.id, item.qty + 1)}
                               aria-label="Increase quantity"
                             >
@@ -148,7 +148,7 @@ export default function CartPage() {
             <div>
               <Card className="sticky top-24">
                 <CardHeader>
-                  <div className="text-base font-semibold">Order Summary</div>
+                  <div className="text-base font-semibold text-black">Order Summary</div>
                 </CardHeader>
 
                 <CardContent className="space-y-3 text-sm">

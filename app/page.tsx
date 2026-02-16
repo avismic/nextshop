@@ -14,7 +14,7 @@ export default function HomePage() {
               <p className="text-sm font-medium text-gray-600">
                 New season • New arrivals
               </p>
-              <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-5xl">
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-5xl text-black">
                 Discover products you’ll actually love.
               </h1>
               <p className="mt-4 text-base text-gray-600 md:text-lg">
@@ -42,7 +42,7 @@ export default function HomePage() {
               <div className="absolute inset-0 grid place-items-center">
                 <div className="rounded-2xl border border-gray-200 bg-white/70 p-6 shadow-sm backdrop-blur">
                   <p className="text-sm font-medium text-gray-600">Featured</p>
-                  <p className="mt-2 text-xl font-semibold">Wireless Headphones</p>
+                  <p className="mt-2 text-xl font-semibold text-black">Wireless Headphones</p>
                   <p className="mt-1 text-sm text-gray-600">
                     Noise-cancelling • 30h battery
                   </p>
@@ -50,7 +50,7 @@ export default function HomePage() {
                     <Link href="/products/p1">
                       <Button size="sm">View</Button>
                     </Link>
-                    <span className="text-sm font-semibold">₹ 129.99</span>
+                    <span className="text-sm font-semibold text-black">₹ 129.99</span>
                   </div>
                 </div>
               </div>
@@ -63,7 +63,7 @@ export default function HomePage() {
           <div className="flex items-end justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold tracking-tight">Shop by category</h2>
-              <p className="mt-1 text-sm text-gray-600">
+              <p className="mt-1 text-sm text-gray-400">
                 Browse curated picks across popular categories.
               </p>
             </div>
@@ -81,7 +81,7 @@ export default function HomePage() {
             ].map((c) => (
               <Card key={c.name} className="hover:shadow-md transition">
                 <CardHeader>
-                  <div className="text-base font-semibold">{c.name}</div>
+                  <div className="text-base font-semibold text-black">{c.name}</div>
                   <div className="text-sm text-gray-600 mt-1">Explore trending picks</div>
                 </CardHeader>
                 <CardContent>
@@ -95,7 +95,7 @@ export default function HomePage() {
         </section>
 
         {/* TRUST ROW */}
-        <section className="mt-12 grid gap-4 lg:grid-cols-3">
+        <section className="mt-12 grid gap-4 lg:grid-cols-3 text-black">
           {[
             { title: "Fast delivery", desc: "Clear ETA and reliable shipping updates." },
             { title: "Easy returns", desc: "Hassle-free returns with simple steps." },

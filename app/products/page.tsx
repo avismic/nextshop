@@ -1,27 +1,29 @@
 import FilterBar from "@/components/FilterBar";
 import ProductCard from "@/components/ProductCard";
-import { queryProducts } from "@/lib/product-service";
+import { queryProducts, type ProductQuery } from "@/lib/product-service";
 
-export default function ProductsPage({
-  searchParams,
-}: {
-  searchParams: { q?: string; category?: string; sort?: string };
-}) {
+type PageProps = {
+  searchParams: Promise<{ q?: string; category?: string; sort?: string }>;
+};
+
+export default async function ProductsPage({ searchParams }: PageProps) {
+  const sp = await searchParams; // ✅ unwrap async searchParams (Next 15/16) [1](https://www.shadcnblocks.com/docs/blocks/getting-started)
+
   const products = queryProducts({
-    q: searchParams.q,
-    category: (searchParams.category as any) ?? "all",
-    sort: (searchParams.sort as any) ?? "",
+    q: sp.q,
+    category: (sp.category ?? "all") as ProductQuery["category"],
+    sort: (sp.sort ?? "") as ProductQuery["sort"],
   });
 
   return (
-    <main className="py-10">
+    <main className="py-10 mx-auto max-w-6xl px-4">
       <div className="flex items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Products</h1>
-          <p className="mt-1 text-sm text-gray-600">Browse and filter our catalog.</p>
+          <p className="mt-1 text-sm text-gray-350">Browse and filter our catalog.</p>
         </div>
-        <p className="text-sm text-gray-600">
-          Showing <span className="font-medium text-gray-900">{products.length}</span>
+        <p className="text-sm text-gray-400">
+          Showing <span className="font-medium text-gray-400">{products.length}</span>
         </p>
       </div>
 

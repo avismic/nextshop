@@ -179,11 +179,11 @@ export default function CheckoutPage() {
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <div className="text-base font-semibold">Shipping details</div>
+                <div className="text-base font-semibold text-black">Shipping details</div>
               </CardHeader>
 
               <CardContent className="p-4">
-                <form className="space-y-4" onSubmit={handleSubmit(placeOrder)}>
+                <form className="space-y-4 text-black" onSubmit={handleSubmit(placeOrder)}>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <label className="text-sm text-gray-700">Name</label>
@@ -264,7 +264,7 @@ export default function CheckoutPage() {
           <div>
             <Card className="sticky top-24">
               <CardHeader>
-                <div className="text-base font-semibold">Order summary</div>
+                <div className="text-base font-semibold text-black">Order summary</div>
               </CardHeader>
 
               <CardContent className="space-y-3 text-sm">

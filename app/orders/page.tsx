@@ -80,7 +80,7 @@ export default function OrdersPage() {
             {/* LEFT: Orders list */}
             <Card className="lg:col-span-1">
               <CardHeader>
-                <div className="text-base font-semibold">Order history</div>
+                <div className="text-base font-semibold text-black">Order history</div>
               </CardHeader>
 
               <CardContent className="p-2">
@@ -131,7 +131,7 @@ export default function OrdersPage() {
                   {/* Items */}
                   <Card>
                     <CardHeader>
-                      <div className="text-base font-semibold">Order details</div>
+                      <div className="text-base font-semibold text-black">Order details</div>
                       <div className="text-xs text-gray-600">
                         Placed on {formatDate(selected.createdAt)}
                       </div>
@@ -156,7 +156,7 @@ export default function OrdersPage() {
                   {/* Shipping */}
                   <Card>
                     <CardHeader>
-                      <div className="text-base font-semibold">Shipping</div>
+                      <div className="text-base font-semibold text-black">Shipping</div>
                     </CardHeader>
                     <CardContent className="text-sm text-gray-700 space-y-1">
                       <div className="font-medium text-gray-900">{selected.customer.name}</div>
@@ -171,7 +171,7 @@ export default function OrdersPage() {
                   {/* Summary */}
                   <Card>
                     <CardHeader>
-                      <div className="text-base font-semibold">Payment & Total</div>
+                      <div className="text-base font-semibold text-black">Payment & Total</div>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm">
                       <div className="flex justify-between text-gray-700">

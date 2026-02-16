@@ -1,56 +1,85 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+
+const categories = ["all", "electronics", "fashion", "books", "home"] as const;
 
 export default function FilterBar() {
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
 
-  const [q, setQ] = useState(sp.get("q") ?? "");
+  // IMPORTANT: stringify so we can safely depend on current params
+  const spString = useMemo(() => sp.toString(), [sp]);
+
+  const [q, setQ] = useState(() => sp.get("q") ?? "");
+
   const category = sp.get("category") ?? "all";
   const sort = sp.get("sort") ?? "";
 
-  // debounce query changes
+  const replaceParams = (mutate: (p: URLSearchParams) => void) => {
+    const params = new URLSearchParams(spString); // ✅ always start from latest
+    mutate(params);
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname);
+  };
+
+  // Debounced search that preserves other filters
   useEffect(() => {
     const t = setTimeout(() => {
-      const params = new URLSearchParams(sp.toString());
-      if (q.trim()) params.set("q", q.trim());
-      else params.delete("q");
-      router.replace(`${pathname}?${params.toString()}`);
+      replaceParams((params) => {
+        const v = q.trim();
+        if (v) params.set("q", v);
+        else params.delete("q");
+      });
     }, 300);
 
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q]);
-
-  const setParam = (key: string, value: string) => {
-    const params = new URLSearchParams(sp.toString());
-    if (!value || value === "all") params.delete(key);
-    else params.set(key, value);
-    router.replace(`${pathname}?${params.toString()}`);
-  };
+    // include spString so we don’t overwrite category/sort changes
+  }, [q, spString]); // ✅ key fix
 
   return (
     <div className="mt-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center">
+        <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center text-black">
           <div className="w-full md:max-w-sm">
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search products..." />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search products..."
+            />
           </div>
 
-          <Select value={category} onChange={(e) => setParam("category", e.target.value)}>
-            <option value="all">All categories</option>
-            <option value="electronics">Electronics</option>
-            <option value="fashion">Fashion</option>
-            <option value="books">Books</option>
-            <option value="home">Home</option>
+          <Select
+            value={category}
+            onChange={(e) =>
+              replaceParams((params) => {
+                const v = e.target.value;
+                if (!v || v === "all") params.delete("category");
+                else params.set("category", v);
+              })
+            }
+          >
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c === "all" ? "All categories" : c[0].toUpperCase() + c.slice(1)}
+              </option>
+            ))}
           </Select>
 
-          <Select value={sort} onChange={(e) => setParam("sort", e.target.value)}>
+          <Select
+            value={sort}
+            onChange={(e) =>
+              replaceParams((params) => {
+                const v = e.target.value;
+                if (!v) params.delete("sort");
+                else params.set("sort", v);
+              })
+            }
+          >
             <option value="">Sort</option>
             <option value="price-asc">Price: Low to High</option>
             <option value="price-desc">Price: High to Low</option>

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getProductById } from "@/lib/product-service";
 import { Badge } from "@/components/ui/badge";
 import AddToCartButton from "@/components/AddToCartButton";
+import WishlistButton from "@/components/WishlistButton";
 
 import Image from "next/image";
 
@@ -59,6 +60,7 @@ export default async function ProductDetail({ params }: PageProps) {
 
             <div className="mt-6">
               <AddToCartButton product={product} />
+              <WishlistButton productId={product.id} />
             </div>
           </div>
         </div>

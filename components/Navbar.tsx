@@ -23,7 +23,7 @@ export default function Navbar() {
 
           <nav className="flex items-center gap-6 text-sm text-white-700">
             <Link href="/products" className="hover:text-white-900">Products</Link>
-            <Link href="/orders" className="hover:text-white-900">Orders</Link>
+            <Link href="/account/orders" className="hover:text-white-900">Orders</Link>
             <Link href="/cart" className="relative hover:text-white-900">
               Cart
               {count > 0 && (

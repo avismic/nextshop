@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Product } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
+import WishlistButton from "@/components/WishlistButton";
 
 export default function ProductCard({ product }: { product: Product }) {
   return (
@@ -38,6 +39,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="shrink-0 text-sm font-semibold text-gray-900">
           ₹ {(product.price / 100).toFixed(2)}
         </div>
+        <WishlistButton productId={product.id} />
       </div>
     </Link>
   );

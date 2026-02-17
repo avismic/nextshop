@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import { Button } from "@/components/ui/button";
 
-export default function WishlistButton({ productId }: { productId: string }) {
+export default function WishlistButton({ productUuid }: { productUuid: string }) {
   const supabase = supabaseBrowser();
   const [loading, setLoading] = useState(false);
   const [inWishlist, setInWishlist] = useState(false);
@@ -14,16 +14,17 @@ export default function WishlistButton({ productId }: { productId: string }) {
       const { data: userRes } = await supabase.auth.getUser();
       if (!userRes.user) return;
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("wishlist_items")
         .select("id")
-        .eq("product_id", productId)
+        .eq("product_id", productUuid)
         .limit(1);
 
-      setInWishlist(Boolean(data && data.length));
+      if (!error) setInWishlist(Boolean(data?.length));
     };
+
     run();
-  }, [productId, supabase]);
+  }, [productUuid, supabase]);
 
   const toggle = async () => {
     setLoading(true);
@@ -36,10 +37,10 @@ export default function WishlistButton({ productId }: { productId: string }) {
     }
 
     if (inWishlist) {
-      await supabase.from("wishlist_items").delete().eq("product_id", productId);
+      await supabase.from("wishlist_items").delete().eq("product_id", productUuid);
       setInWishlist(false);
     } else {
-      const { error } = await supabase.from("wishlist_items").insert({ product_id: productId });
+      const { error } = await supabase.from("wishlist_items").insert({ product_id: productUuid });
       if (!error) setInWishlist(true);
     }
 

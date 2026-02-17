@@ -1,29 +1,37 @@
-import { redirect } from "next/navigation";
-import Container from "@/components/Container";
-import { supabaseServer } from "@/lib/supabase/server";
+"use client";
 
-export default async function AdminPage() {
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { supabaseBrowser } from "@/lib/supabase/browser";
 
-  if (!user) redirect("/auth/login");
+export default function AdminIndexPage() {
+  const router = useRouter();
+  const supabase = supabaseBrowser();
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+  useEffect(() => {
+    const run = async () => {
+      const { data: userRes } = await supabase.auth.getUser();
+      if (!userRes.user) {
+        router.replace("/auth/login?next=/admin/products");
+        return;
+      }
 
-  if (!profile || profile.role !== "admin") redirect("/");
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userRes.user.id)
+        .single();
 
-  return (
-    <main className="py-10">
-      <Container>
-        <h1 className="text-2xl font-semibold">Admin</h1>
-        <p className="mt-2 text-sm text-gray-600">
-          You’re an admin. Next: add product CRUD + CSV import + image uploads.
-        </p>
-      </Container>
-    </main>
-  );
+      if (!profile || profile.role !== "admin") {
+        router.replace("/");
+        return;
+      }
+
+      router.replace("/admin/products");
+    };
+
+    run();
+  }, [router, supabase]);
+
+  return null;
 }

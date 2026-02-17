@@ -16,8 +16,12 @@ export default function ProductCard({ product }: { product: Product }) {
           src={product.image ?? "/images/placeholder.png"}
           alt={product.name}
           fill
+          priority
           className="object-contain p-4 transition-transform duration-300 group-hover:scale-[1.02]"
           sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 30vw"
+          
+          unoptimized={process.env.NODE_ENV === "development"}
+
         />
       </div>
 
@@ -39,7 +43,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="shrink-0 text-sm font-semibold text-gray-900">
           ₹ {(product.price / 100).toFixed(2)}
         </div>
-        <WishlistButton productId={product.id} />
+        <WishlistButton productUuid={product.id} />
       </div>
     </Link>
   );

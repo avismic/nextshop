@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
+import { useSearchParams } from "next/navigation";
+
+
 export default function LoginPage() {
   const router = useRouter();
   const supabase = supabaseBrowser();
@@ -16,11 +19,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
 
+  
+  const sp = useSearchParams();
+  const next = sp.get("next") ?? "/account/orders";
+
+
   const signIn = async () => {
     setErr(null);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return setErr(error.message);
-    router.push("/account/orders");
+    router.replace(next);
     router.refresh();
     console.log("login result:", { error });
   };

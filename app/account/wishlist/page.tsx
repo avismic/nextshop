@@ -129,7 +129,7 @@ export default function WishlistPage() {
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <div className="font-semibold">{money(p.price_cents)}</div>
+                    <div className="font-semibold text-black">{money(p.price_cents)}</div>
                     <Button variant="ghost" onClick={() => remove(id)}>
                       Remove
                     </Button>

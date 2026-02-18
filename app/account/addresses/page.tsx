@@ -171,9 +171,9 @@ export default function AddressesPage() {
 
       <Card className="mt-6">
         <CardHeader>
-          <div className="font-semibold">Add address</div>
+          <div className="font-semibold text-black">Add address</div>
         </CardHeader>
-        <CardContent className="p-4 grid gap-3">
+        <CardContent className="p-4 grid gap-3 text-black">
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="text-sm text-gray-700">Label</label>
@@ -201,7 +201,7 @@ export default function AddressesPage() {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="text-sm text-gray-700">City</label>
+              <label className="text-sm text-black">City</label>
               <Input
                 value={form.city}
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
@@ -231,7 +231,7 @@ export default function AddressesPage() {
             <Card key={a.id}>
               <CardContent className="p-4 flex items-start justify-between gap-4">
                 <div>
-                  <div className="font-semibold">
+                  <div className="font-semibold text-black">
                     {a.label} {a.is_default ? "• Default" : ""}
                   </div>
                   <div className="text-sm text-gray-600">

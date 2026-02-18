@@ -80,8 +80,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             <div className="rounded-xl border border-gray-200 bg-white p-2 shadow-sm">
               <div className="px-3 py-2 text-xs font-semibold text-gray-500">ADMIN</div>
               <div className="flex flex-col gap-1">
-                {nav("/admin/products", "Products")}
-                {nav("/admin/products/new", "Add product")}
+                {/* {nav("/admin/products", "Products")}
+                {nav("/admin/products/new", "Add product")} */}
                 {nav("/admin/products", "Products")}
                 {nav("/admin/products/new", "Add product")}
                 {nav("/admin/products/import", "CSV import")}

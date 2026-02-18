@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 
-const categories = ["all", "electronics", "fashion", "books", "home"] as const;
+const categories = ["all", "electronics", "fashion", "books", "home", "Smartphones"] as const;
 
 export default function FilterBar() {
   const router = useRouter();

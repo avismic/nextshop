@@ -22,6 +22,7 @@ export default function Navbar() {
           </Link>
 
           <nav className="flex items-center gap-6 text-sm text-white-700">
+            <Link href="/auth/login" className="hover:text-white-900">Login</Link>
             <Link href="/products" className="hover:text-white-900">Products</Link>
             <Link href="/account/orders" className="hover:text-white-900">Orders</Link>
             <Link href="/cart" className="relative hover:text-white-900">

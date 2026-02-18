@@ -14,9 +14,13 @@ export default function WishlistButton({ productUuid }: { productUuid: string })
       const { data: userRes } = await supabase.auth.getUser();
       if (!userRes.user) return;
 
+      const uid = userRes.user.id;
+
+      // ✅ Check only this user's wishlist
       const { data, error } = await supabase
         .from("wishlist_items")
         .select("id")
+        .eq("user_id", uid)
         .eq("product_id", productUuid)
         .limit(1);
 
@@ -26,7 +30,11 @@ export default function WishlistButton({ productUuid }: { productUuid: string })
     run();
   }, [productUuid, supabase]);
 
-  const toggle = async () => {
+  const toggle = async (e?: React.MouseEvent) => {
+    // ✅ stop click from triggering Link navigation (ProductCard wraps WishlistButton in a Link)
+    e?.preventDefault();
+    e?.stopPropagation();
+
     setLoading(true);
 
     const { data: userRes } = await supabase.auth.getUser();
@@ -36,12 +44,27 @@ export default function WishlistButton({ productUuid }: { productUuid: string })
       return;
     }
 
+    const uid = userRes.user.id;
+
     if (inWishlist) {
-      await supabase.from("wishlist_items").delete().eq("product_id", productUuid);
-      setInWishlist(false);
+      // ✅ Delete only this user's row
+      const { error } = await supabase
+        .from("wishlist_items")
+        .delete()
+        .eq("user_id", uid)
+        .eq("product_id", productUuid);
+
+      if (!error) setInWishlist(false);
+      else alert(error.message);
     } else {
-      const { error } = await supabase.from("wishlist_items").insert({ product_id: productUuid });
+      // ✅ Insert must include user_id to satisfy schema + RLS
+      const { error } = await supabase.from("wishlist_items").insert({
+        user_id: uid,
+        product_id: productUuid,
+      });
+
       if (!error) setInWishlist(true);
+      else alert(error.message);
     }
 
     setLoading(false);

@@ -9,6 +9,7 @@ import { supabaseBrowser } from "@/lib/supabase/browser";
 
 type Address = {
   id: string;
+  user_id: string;
   label: string;
   line1: string;
   city: string;
@@ -19,7 +20,6 @@ type Address = {
 
 export default function AddressesPage() {
   const supabase = supabaseBrowser();
-
   const [loading, setLoading] = useState(true);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [err, setErr] = useState<string | null>(null);
@@ -36,15 +36,18 @@ export default function AddressesPage() {
     setErr(null);
     setLoading(true);
 
-    const { data: userRes } = await supabase.auth.getUser();
-    if (!userRes.user) {
+    const { data: userRes, error: userErr } = await supabase.auth.getUser();
+    if (userErr || !userRes.user) {
       setLoading(false);
-      return;
+      return; // AccountShell will redirect
     }
+
+    const uid = userRes.user.id;
 
     const { data, error } = await supabase
       .from("addresses")
-      .select("id,label,line1,city,state,pincode,is_default")
+      .select("id,user_id,label,line1,city,state,pincode,is_default")
+      .eq("user_id", uid)
       .order("created_at", { ascending: false });
 
     if (error) setErr(error.message);
@@ -54,17 +57,32 @@ export default function AddressesPage() {
 
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const add = async () => {
     setErr(null);
 
-    if (!form.line1 || !form.city || !form.state || !/^\d{6}$/.test(form.pincode)) {
+    if (
+      !form.line1 ||
+      !form.city ||
+      !form.state ||
+      !/^\d{6}$/.test(form.pincode)
+    ) {
       setErr("Please fill all fields. Pincode must be 6 digits.");
       return;
     }
 
+    const { data: userRes, error: userErr } = await supabase.auth.getUser();
+    if (userErr || !userRes.user) {
+      setErr("Please login again.");
+      return;
+    }
+
+    const uid = userRes.user.id;
+
     const { error } = await supabase.from("addresses").insert({
+      user_id: uid, // ✅ REQUIRED: matches schema + RLS
       label: form.label,
       line1: form.line1,
       city: form.city,
@@ -73,23 +91,70 @@ export default function AddressesPage() {
       is_default: addresses.length === 0, // first becomes default
     });
 
-    if (error) setErr(error.message);
-    else {
-      setForm({ label: "Home", line1: "", city: "", state: "", pincode: "" });
-      load();
+    if (error) {
+      setErr(error.message);
+      return;
     }
+
+    setForm({ label: "Home", line1: "", city: "", state: "", pincode: "" });
+    load();
   };
 
   const setDefault = async (id: string) => {
-    // Simple demo approach: unset all, then set one.
-    // RLS will restrict this to the user's own rows.
-    await supabase.from("addresses").update({ is_default: false }).neq("id", "00000000-0000-0000-0000-000000000000");
-    await supabase.from("addresses").update({ is_default: true }).eq("id", id);
+    setErr(null);
+
+    const { data: userRes, error: userErr } = await supabase.auth.getUser();
+    if (userErr || !userRes.user) {
+      setErr("Please login again.");
+      return;
+    }
+
+    const uid = userRes.user.id;
+
+    // 1) unset current defaults for this user only
+    const { error: unsetErr } = await supabase
+      .from("addresses")
+      .update({ is_default: false })
+      .eq("user_id", uid);
+
+    if (unsetErr) {
+      setErr(unsetErr.message);
+      return;
+    }
+
+    // 2) set selected address as default (also scoped by user_id)
+    const { error: setErr2 } = await supabase
+      .from("addresses")
+      .update({ is_default: true })
+      .eq("id", id)
+      .eq("user_id", uid);
+
+    if (setErr2) {
+      setErr(setErr2.message);
+      return;
+    }
+
     load();
   };
 
   const remove = async (id: string) => {
-    await supabase.from("addresses").delete().eq("id", id);
+    setErr(null);
+
+    const { data: userRes, error: userErr } = await supabase.auth.getUser();
+    if (userErr || !userRes.user) {
+      setErr("Please login again.");
+      return;
+    }
+
+    const uid = userRes.user.id;
+
+    const { error } = await supabase
+      .from("addresses")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", uid);
+
+    if (error) setErr(error.message);
     load();
   };
 
@@ -98,7 +163,9 @@ export default function AddressesPage() {
       <div className="flex items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Addresses</h1>
-          <p className="mt-1 text-sm text-gray-600">Saved addresses for faster checkout.</p>
+          <p className="mt-1 text-sm text-gray-600">
+            Saved addresses for faster checkout.
+          </p>
         </div>
       </div>
 
@@ -110,32 +177,46 @@ export default function AddressesPage() {
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="text-sm text-gray-700">Label</label>
-              <Input value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} />
+              <Input
+                value={form.label}
+                onChange={(e) => setForm({ ...form, label: e.target.value })}
+              />
             </div>
             <div>
               <label className="text-sm text-gray-700">Pincode</label>
-              <Input value={form.pincode} onChange={(e) => setForm({ ...form, pincode: e.target.value })} />
+              <Input
+                value={form.pincode}
+                onChange={(e) => setForm({ ...form, pincode: e.target.value })}
+              />
             </div>
           </div>
 
           <div>
             <label className="text-sm text-gray-700">Address</label>
-            <Input value={form.line1} onChange={(e) => setForm({ ...form, line1: e.target.value })} />
+            <Input
+              value={form.line1}
+              onChange={(e) => setForm({ ...form, line1: e.target.value })}
+            />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="text-sm text-gray-700">City</label>
-              <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+              <Input
+                value={form.city}
+                onChange={(e) => setForm({ ...form, city: e.target.value })}
+              />
             </div>
             <div>
               <label className="text-sm text-gray-700">State</label>
-              <Input value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} />
+              <Input
+                value={form.state}
+                onChange={(e) => setForm({ ...form, state: e.target.value })}
+              />
             </div>
           </div>
 
           {err && <p className="text-sm text-rose-600">{err}</p>}
-
           <Button onClick={add}>Save address</Button>
         </CardContent>
       </Card>
@@ -157,7 +238,6 @@ export default function AddressesPage() {
                     {a.line1}, {a.city}, {a.state} {a.pincode}
                   </div>
                 </div>
-
                 <div className="flex gap-2">
                   {!a.is_default && (
                     <Button variant="secondary" onClick={() => setDefault(a.id)}>

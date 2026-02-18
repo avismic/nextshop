@@ -59,8 +59,8 @@ export default function AccountShell({ children }: { children: React.ReactNode }
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="min-w-[220px] space-y-4">
             <div>
-              <div className="text-sm text-gray-600">Signed in as</div>
-              <div className="font-semibold text-gray-900 break-all">{email}</div>
+              <div className="text-sm text-gray-300">Signed in as</div>
+              <div className="text-gray-500 break-all">{email}</div>
             </div>
 
             <div className="rounded-xl border border-gray-200 bg-white p-2 shadow-sm">

@@ -28,6 +28,8 @@ export default function AdminIndexPage() {
       }
 
       router.replace("/admin/products");
+
+      
     };
 
     run();

@@ -26,6 +26,8 @@ export default function AdminProductsPage() {
   const [items, setItems] = useState<DbProduct[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
+  
+
   const load = useCallback(async () => {
     setErr(null);
     setLoading(true);
@@ -53,7 +55,7 @@ export default function AdminProductsPage() {
       <div className="flex items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Products</h1>
-          <p className="mt-1 text-sm text-gray-600">Manage products in the database.</p>
+          <p className="mt-1 text-sm text-gray-400">Manage products in the database.</p>
         </div>
 
         <div className="flex gap-2">
@@ -84,8 +86,31 @@ export default function AdminProductsPage() {
                   </div>
                   <div className="mt-1 break-all text-xs text-gray-500">UUID: {p.id}</div>
                 </div>
-                <div className="shrink-0 font-semibold">{money(p.price_cents)}</div>
+                <div className="shrink-0 font-semibold text-black">{money(p.price_cents)}</div>
               </CardContent>
+
+                <div className="flex items-center gap-2">
+                <Link href={`/admin/products/${p.id}/edit`}>
+                    <Button variant="ghost" size="sm" className="font-bold text-blue-600 hover:text-blue-700">Edit</Button>
+                </Link>
+                
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={async () => {
+                    const ok = confirm(`Disable "${p.name}"? (It will disappear from storefront)`);
+                    if (!ok) return;
+                    const { error } = await supabase.from("products").update({ active: false }).eq("id", p.id);
+                    if (error) alert(error.message);
+                    else load();
+                    const { data: u } = await supabase.auth.getUser();
+                    const { data: s } = await supabase.auth.getSession();
+                    console.log("user:", u.user?.id, "session:", Boolean(s.session));
+                    }}
+                >
+                    Disable
+                </Button>
+                </div>
             </Card>
           ))}
 

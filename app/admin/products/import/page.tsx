@@ -235,20 +235,20 @@ export default function AdminImportProductsPage() {
 
       <Card className="mt-6">
         <CardHeader>
-          <div className="text-base font-semibold">Upload CSV</div>
+          <div className="text-base font-semibold text-black">Upload CSV</div>
           <p className="text-sm text-gray-600">
             Header: <code>name,description,price_cents,category,stock,rating,image_filename</code>
           </p>
         </CardHeader>
 
-        <CardContent className="p-4 space-y-3">
+        <CardContent className="p-4 space-y-3 text-black">
           <input
             type="file"
             accept=".csv,text/csv"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           />
 
-          <Button onClick={runImport} disabled={!file || running}>
+          <Button onClick={runImport} disabled={!file || running} className="mt-2">
             {running ? "Importing…" : "Import CSV"}
           </Button>
 

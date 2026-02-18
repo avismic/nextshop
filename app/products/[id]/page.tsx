@@ -110,6 +110,7 @@ export default function ProductDetailPage() {
                   className="object-contain p-10"
                   sizes="(max-width: 768px) 100vw, 50vw"
                   priority
+                  unoptimized
                 />
               ) : null}
             </div>

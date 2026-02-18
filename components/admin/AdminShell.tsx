@@ -85,6 +85,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                 {nav("/admin/products", "Products")}
                 {nav("/admin/products/new", "Add product")}
                 {nav("/admin/products/import", "CSV import")}
+                {nav("/admin/orders", "Orders")}
               </div>
             </div>
 
